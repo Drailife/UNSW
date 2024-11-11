@@ -54,6 +54,9 @@ struct dungeon {
 
     // a pointer to the next dungeon in the map or NULL
     struct dungeon *next;
+
+    // the flag to indicate if the player has attacked the monster
+    int has_attacked;
 };
 
 // Stores information about an item
@@ -222,6 +225,7 @@ struct dungeon *create_dungeon(char *name, enum monster_type monster,
     dungeon->boss = NULL;
     dungeon->items = NULL;
     dungeon->next = NULL;
+    dungeon->has_attacked = 0;
     return dungeon;
 }
 
@@ -429,19 +433,31 @@ int move_player(struct map *map, char command)
 
 int fight(struct map *map, char command)
 {
+    if (map == NULL) {
+        return INVALID;
+    }
     struct dungeon *current = find_player(map);
     if (current == NULL || current->num_monsters == 0) {
         return INVALID;
     }
-    float damages = map->player->damage;
-    if (command == MAGICAL_ATTACK) {
+    int damages = map->player->damage;
+    if (command == PHYSICAL_ATTACK) {
+        damages = map->player->damage;
+    } else if (command == MAGICAL_ATTACK) {
         damages *= map->player->magic_modifier;
+    } else {
+        return INVALID;
     }
-    for (int i = 1; i <= current->num_monsters; i++) {
-        damages -= current->monster;
-        if (damages >= 0) {
-            map->player->points += current->monster;
-            current->num_monsters--;
+    int monster_health = current->monster;
+    int monster_defeated = damages / monster_health;
+    if (monster_defeated > current->num_monsters) {
+        map->player->points += current->num_monsters * current->monster;
+        current->num_monsters = 0;
+    } else {
+        map->player->points += monster_defeated * current->monster;
+        current->num_monsters -= monster_defeated;
+        if (current->monster != WOLF) {
+            current->has_attacked = 1;
         }
     }
     return VALID;
@@ -449,13 +465,21 @@ int fight(struct map *map, char command)
 
 int end_turn(struct map *map)
 {
-    struct dungeon *current = find_player(map);
-    int monster_damage =
-        current->monster * current->num_monsters - map->player->shield_power;
-    if (monster_damage < 0) {
-        monster_damage = 0;
+    if (map == NULL) {
+        return CONTINUE_GAME;
     }
-    map->player->health_points -= monster_damage;
+    struct dungeon *current = find_player(map);
+    int total_damage = 0;
+    if (current->monster == WOLF) {
+        total_damage += current->num_monsters * WOLF;
+    } else if (current->has_attacked == 1) {
+        total_damage += current->num_monsters * current->monster;
+    }
+    total_damage -= map->player->shield_power;
+    if (total_damage < 0) {
+        total_damage = 0;
+    }
+    map->player->health_points -= total_damage;
     return CONTINUE_GAME;
 }
 
