@@ -392,12 +392,18 @@ int insert_dungeon(struct map *map, char *name, enum monster_type monster,
 void print_dungeon(struct map *map)
 {
     struct dungeon *current = map->entrance;
+    int position = 1;
     while (current != NULL) {
         if (current->contains_player == 1) {
             print_detail_dungeon(map->player->name, current);
-            print_no_items();
+            if (current->items == NULL) {
+                print_no_items();
+            } else {
+                print_item(current->items, position);
+            }
             return;
         }
+        position++;
         current = current->next;
     }
 }
@@ -540,6 +546,7 @@ struct item *create_item(enum item_type type, int points)
     item->type = type;
     item->points = points;
     item->next = NULL;
+
     return item;
 }
 
