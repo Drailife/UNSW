@@ -1,0 +1,123 @@
+#!/usr/local/bin/bash
+
+# newclass - alter environment so as to have easy access to class specific commands.
+#
+# This version is a shell script which execs a new shell after modifying the environment.
+# There may also exist a version which is a shell function and so does not exec a new
+# shell. Similarly there may be a c-shell alias.
+#
+# Usage is:
+#  newclass classname 		run new shell
+#  newclass classname command   run given command
+#  classname			run new shell
+#  classname command		run given command
+#
+# classname maybe [0-9][0-9][0-9][0-9] in which case COMP is assumed
+#   or [A-Za-z][A-Za-z][A-Za-z][A-Za-z][0-9][0-9][0-9][0-9]
+#
+# Environment changed is
+#   PATH MANPATH PS1
+# old value is stored in noclass_PATH noclass_MANPATH noclass_PS1 unless that is already set.
+# new value is constructed by prefixing noclass_{var} with class specific info
+# 
+# if no class specific PATH or MANPATH is found for the class, a warning is given, but the command/shell is
+# run anyway.
+#
+#
+# History:
+# sometime someone - initial bits, plus incremental adding of class aliases
+# 26jul2006 simonb - include /home/classdir/.newclassrc
+# 22sep2021 meicheng - replace ae with bash
+
+# determine class
+command=${0##*/}
+prefix=
+if [ " $command" = " newclass" ]
+then # find the class named
+  if [ $# -eq 0 ]
+  then echo "Usage: newclass classname [command]" >&2
+       exit 2
+  fi
+  prefix="newclass "
+  command=$1
+  shift
+fi
+case "$command" in 
+  109[1-2] ) class=DPST$command ;; 
+  [0-9][0-9][0-9][0-9] ) class=COMP$command ;;
+  cs[0-9][0-9][0-9][0-9] ) class=COMP${command: -4} ;;
+  [A-Za-z][A-Za-z][A-Za-z][A-Za-z][0-9][0-9][0-9][0-9] ) class=${command^^} ;;
+  * ) echo >&2 "$prefix$command: $command is not a valid class"
+      exit 2
+esac
+case "$class" in
+  COMP[0-9][0-9][0-9][0-9] ) GIVECLASS=cs${command: -4} ;;
+  SENG[0-9][0-9][0-9][0-9] ) GIVECLASS=se${command: -4} ;;
+  BINF[0-9][0-9][0-9][0-9] ) GIVECLASS=bi${command: -4} ;;
+  DPST[0-9][0-9][0-9][0-9] ) GIVECLASS=dp${command: -4} ;;
+  ENGG[0-9][0-9][0-9][0-9] ) GIVECLASS=en${command: -4} ;;
+  GENE[0-9][0-9][0-9][0-9] ) GIVECLASS=ge${command: -4} ;;
+  GSOE[0-9][0-9][0-9][0-9] ) GIVECLASS=gs${command: -4} ;;
+  HSCH[0-9][0-9][0-9][0-9] ) GIVECLASS=hs${command: -4} ;;
+  INFS[0-9][0-9][0-9][0-9] ) GIVECLASS=is${command: -4} ;;
+  REGZ[0-9][0-9][0-9][0-9] ) GIVECLASS=rz${command: -4} ;;
+  * ) echo "Warning: could not derive account name for class $class" >&2
+esac
+
+#echo "noclass_PATH=$noclass_PATH noclass_MANPATH=$noclass_MANPATH noclass_PS1=$noclass_PS1"
+#echo "PATH=$PATH MANPATH=$MANPATH PS1=$PS1"
+# save the no_class stuff
+if [ -z "$noclass_PATH" ]
+then noclass_PATH=$PATH
+fi
+if [ -z "$noclass_MANPATH" ]
+then noclass_MANPATH=$MANPATH 
+fi
+if [ -z "$noclass_PS1" ]
+then noclass_PS1=$PS1
+fi
+
+# create then class specific variables
+PS1="($class) $noclass_PS1"
+# 28jan2015 - remove acc or udb
+#acc format='${cpath}#${cmanpath}' type=class "$class" 2> /dev/null | IFS=# read path manpath
+if [ -n "$GIVECLASS" ]
+then
+  path=/home/$GIVECLASS/bin
+  manpath=/home/$GIVECLASS/man
+fi
+
+
+if [ -z "$path" ]
+then echo "Warning: no path information for class $class" >&2
+  PATH=$noclass_PATH
+else
+  eval PATH=$path:\$noclass_PATH
+fi
+
+if [ -z "$manpath" ]
+then
+  MANPATH=$noclass_MANPATH
+else
+  eval MANPATH=$manpath:\$noclass_MANPATH
+fi
+
+
+if [ -r "/home/$GIVECLASS/.newclassrc" ]; then
+  source /home/$GIVECLASS/.newclassrc
+fi
+
+# make sure appropriate things get exported
+export PATH MANPATH PS1 noclass_PATH noclass_MANPATH noclass_PS1 GIVECLASS
+
+# ok, now run the command, or shell
+if [ $# -eq 0 ]
+then
+  echo "newclass starting new subshell for class $class..."
+  #echo "SHELL=$SHELL PS1=$PS1 PATH=$PATH"
+  exec ${SHELL:-/bin/bash} --norc
+  echo >&2 "newclass: cannot find shell $SHELL: giving up" 
+  exit 1
+else
+  exec "$@"
+fi

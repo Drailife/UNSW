@@ -1,0 +1,119 @@
+Welcome to the 1511 Dungeon!
+This is a game where you get to create your own dungeon map, battle monsters and collect items!
+Please enter the name of your map: Please enter the amount of points required to win: Please enter the player's name: Player Class Options:
+	Fighter
+	Wizard
+Please enter player's chosen class type: 
+
+----------Setup Phase----------
+
+
+Enter Command: forest has been added as a dungeon to the map!
+
+Enter Command: beach has been added as a dungeon to the map!
+
+Enter Command: castle has been added as a dungeon to the map!
+
+Enter Command: Map of castle!
+|^|^|^|^|^|   |^|^|^|^|^|
+
+1. castle
+Boss: None
+Monster: Skeleton
+Empty
+
+|^|^|^|^|^|   |^|^|^|^|^|
+          |   |
+          |   |
+          |   |
+|^|^|^|^|^|   |^|^|^|^|^|
+
+2. forest
+Boss: None
+Monster: Slime
+Minsc is here
+
+|^|^|^|^|^|   |^|^|^|^|^|
+          |   |
+          |   |
+          |   |
+|^|^|^|^|^|   |^|^|^|^|^|
+
+3. beach
+Boss: None
+Monster: Goblin
+Empty
+
+|^|^|^|^|^|   |^|^|^|^|^|
+
+Enter Command: Please enter the required item to defeat the final boss: The final boss has been added to Faerun!
+Map of castle!
+|^|^|^|^|^|   |^|^|^|^|^|
+
+1. castle
+Boss: None
+Monster: Skeleton
+Empty
+
+|^|^|^|^|^|   |^|^|^|^|^|
+          |   |
+          |   |
+          |   |
+|^|^|^|^|^|   |^|^|^|^|^|
+
+2. forest
+Boss: None
+Monster: Slime
+Minsc is here
+
+|^|^|^|^|^|   |^|^|^|^|^|
+          |   |
+          |   |
+          |   |
+|^|^|^|^|^|   |^|^|^|^|^|
+
+3. beach
+Boss: Present
+Monster: Goblin
+Empty
+
+|^|^|^|^|^|   |^|^|^|^|^|
+
+
+--------Gameplay Phase--------
+
+
+Enter Command: Map of castle!
+|^|^|^|^|^|   |^|^|^|^|^|
+
+1. castle
+Boss: None
+Monster: Skeleton
+Empty
+
+|^|^|^|^|^|   |^|^|^|^|^|
+          |   |
+          |   |
+          |   |
+|^|^|^|^|^|   |^|^|^|^|^|
+
+2. forest
+Boss: None
+Monster: Slime
+Minsc is here
+
+|^|^|^|^|^|   |^|^|^|^|^|
+          |   |
+          |   |
+          |   |
+|^|^|^|^|^|   |^|^|^|^|^|
+
+3. beach
+Boss: Present
+Monster: Goblin
+Empty
+
+|^|^|^|^|^|   |^|^|^|^|^|
+
+Enter Command: 
+Thanks for playing!
