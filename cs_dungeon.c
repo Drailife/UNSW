@@ -13,7 +13,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
 // Add any extra #includes your code needs here.
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -485,6 +484,24 @@ int end_turn(struct map *map)
         total_damage = 0;
     }
     map->player->health_points -= total_damage;
+    //  if the player has died, return PLAYER_DEFEATED
+    if (map->player->health_points <= 0) {
+        return PLAYER_DEFEATED;
+    }
+    int no_monsters = 1;
+    // check if there are any monsters left in the map
+    for (struct dungeon *d = map->entrance; d != NULL; d = d->next) {
+        if (d->num_monsters != 0) {
+            no_monsters = 0;
+            break;
+        }
+    }
+    if (map->player->points >= map->win_requirement && no_monsters == 1) {
+        return WON_MONSTERS;
+    }
+    // return WON_BOSS if the player defeated the boss and met the point
+    // requirement
+
     return CONTINUE_GAME;
 }
 
