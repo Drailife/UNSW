@@ -392,22 +392,22 @@ int insert_dungeon(struct map *map, char *name, enum monster_type monster,
 void print_dungeon(struct map *map)
 {
     struct dungeon *current = map->entrance;
-    int position = 1;
+    // int position = 1;
     while (current != NULL) {
         if (current->contains_player == 1) {
             print_detail_dungeon(map->player->name, current);
             if (current->items == NULL) {
                 print_no_items();
             } else {
-                int position = 1;
+                int pos = 1;
                 for (struct item *item = current->items; item != NULL;
-                     item = item->next, position++) {
-                    print_item(current->items, position);
+                     item = item->next, pos++) {
+                    print_item(item, pos);
                 }
             }
             return;
         }
-        position++;
+        // position++;
         current = current->next;
     }
 }
@@ -582,15 +582,14 @@ int add_item(struct map *map, int dungeon_number, enum item_type type,
         struct item *current_item = current_dungeon->items;
         while (current_item != NULL && type >= current_item->type) {
             prev_item = current_item;
-            iurrent_dungeon->items = new_item;
             current_item = current_item->next;
         }
         if (prev_item == NULL) {
             new_item->next = current_dungeon->items;
             current_dungeon->items = new_item;
         } else {
-            prev_item->next = new_item;
             new_item->next = current_item;
+            prev_item->next = new_item;
         }
     }
     return VALID;
