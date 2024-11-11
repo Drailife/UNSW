@@ -452,6 +452,9 @@ int end_turn(struct map *map)
     struct dungeon *current = find_player(map);
     int monster_damage =
         current->monster * current->num_monsters - map->player->shield_power;
+    if (monster_damage < 0) {
+        monster_damage = 0;
+    }
     map->player->health_points -= monster_damage;
     return CONTINUE_GAME;
 }
