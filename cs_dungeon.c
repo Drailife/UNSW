@@ -659,6 +659,7 @@ int use_item(struct map *map, int item_number)
             map->player->health_points = MAX_HEALTH;
         }
     }
+    map->player->points += current_item->points;
     free(current_item);
     return VALID;
 }
