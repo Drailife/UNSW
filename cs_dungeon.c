@@ -590,8 +590,7 @@ int add_item(struct map *map, int dungeon_number, enum item_type type,
         }
         current_dungeon = current_dungeon->next;
     }
-    if (type != PHYSICAL_WEAPON && type != MAGICAL_TOME && type != ARMOR &&
-        type != HEALTH_POTION && type != TREASURE) {
+    if (type < PHYSICAL_WEAPON || type > TREASURE) {
         return INVALID_ITEM;
     }
     if (points < MIN_ITEM_POINT_VALUE || points > MAX_ITEM_POINT_VALUE) {
@@ -884,8 +883,7 @@ void print_empty_map()
 
 int check_monster_type(enum monster_type monster)
 {
-    if (monster != SLIME && monster != GOBLIN && monster != SKELETON &&
-        monster != WOLF) {
+    if (monster < SLIME || monster > WOLF) {
         return INVALID;
     }
     return VALID;
