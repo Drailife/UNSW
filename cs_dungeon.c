@@ -400,8 +400,8 @@ void print_dungeon(struct map *map)
 
 int move_player(struct map *map, char command)
 {
-    if (map->entrance == NULL && command != NEXT_DUNGEON &&
-        command != PREVIOUS_DUNGEON) {
+    if (map->entrance == NULL ||
+        (command != NEXT_DUNGEON && command != PREVIOUS_DUNGEON)) {
         return INVALID;
     }
     struct dungeon *prev = NULL;
