@@ -635,6 +635,9 @@ int use_item(struct map *map, int item_number)
     }
     struct item *prev_item = NULL;
     struct item *current_item = map->player->inventory;
+    if (current_item == NULL) {
+        return INVALID_ITEM;
+    }
     for (int pos = 1; pos < item_number; pos++) {
         if (current_item == NULL) {
             return INVALID_ITEM;
