@@ -517,17 +517,12 @@ int end_turn(struct map *map)
         if (cur->num_monsters != 0) {
             no_monsters = 0;
         } else {
-            if (cur->contains_player == 0 && cur->boss == NULL) {
+            if (cur->contains_player == 0 && cur->boss == NULL &&
+                cur->items == NULL) {
                 if (prev != NULL) {
                     prev->next = cur->next;
                 } else {
                     map->entrance = cur->next;
-                }
-                struct item *item = cur->items;
-                while (item != NULL) {
-                    struct item *next_item = item->next;
-                    free(item);
-                    item = next_item;
                 }
                 free(cur);
             }
