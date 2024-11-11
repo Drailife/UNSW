@@ -539,6 +539,7 @@ struct item *create_item(enum item_type type, int points)
     }
     item->type = type;
     item->points = points;
+    item->next = NULL;
     return item;
 }
 
