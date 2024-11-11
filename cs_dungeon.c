@@ -630,9 +630,37 @@ int collect_item(struct map *map, int item_number)
 
 int use_item(struct map *map, int item_number)
 {
-    // TODO: implement this function
-    printf("Use Item not yet implemented.\n");
-    exit(1);
+    if (item_number < 1) {
+        return INVALID_ITEM;
+    }
+    struct item *prev_item = NULL;
+    struct item *current_item = map->player->inventory;
+    for (int pos = 1; pos < item_number; pos++) {
+        if (current_item == NULL) {
+            return INVALID_ITEM;
+        }
+        prev_item = current_item;
+        current_item = current_item->next;
+    }
+    if (prev_item == NULL) {
+        map->player->inventory = current_item->next;
+    } else {
+        prev_item->next = current_item->next;
+    }
+    if (current_item->type == PHYSICAL_WEAPON) {
+        map->player->damage += current_item->points;
+    } else if (current_item->type == MAGICAL_TOME) {
+        map->player->magic_modifier += current_item->points / 10.0;
+    } else if (current_item->type == ARMOR) {
+        map->player->shield_power += current_item->points / 2;
+    } else if (current_item->type == HEALTH_POTION) {
+        map->player->health_points += current_item->points + 5;
+        if (map->player->health_points > MAX_HEALTH) {
+            map->player->health_points = MAX_HEALTH;
+        }
+    }
+    free(current_item);
+    return VALID;
 }
 
 void free_map(struct map *map)
