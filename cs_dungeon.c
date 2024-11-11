@@ -553,12 +553,15 @@ struct item *create_item(enum item_type type, int points)
 int add_item(struct map *map, int dungeon_number, enum item_type type,
              int points)
 {
-    struct dungeon *current = map->entrance;
+    if (dungeon_number < 1) {
+        return INVALID_DUNGEON;
+    }
+    struct dungeon *current_dungeon = map->entrance;
     for (int i = 1; i < dungeon_number; i++) {
-        if (current == NULL) {
+        if (current_dungeon == NULL) {
             return INVALID_DUNGEON;
         }
-        current = current->next;
+        current_dungeon = current_dungeon->next;
     }
     if (type != PHYSICAL_WEAPON && type != MAGICAL_TOME && type != ARMOR &&
         type != HEALTH_POTION && type != TREASURE) {
@@ -568,18 +571,18 @@ int add_item(struct map *map, int dungeon_number, enum item_type type,
         return INVALID_POINTS;
     }
     struct item *new_item = create_item(type, points);
-    if (current->items == NULL) {
-        current->items = new_item;
+    if (current_dungeon->items == NULL) {
+        current_dungeon->items = new_item;
     } else {
         struct item *prev_item = NULL;
-        struct item *current_item = current->items;
+        struct item *current_item = current_dungeon->items;
         while (current_item != NULL && type >= current_item->type) {
             prev_item = current_item;
             current_item = current_item->next;
         }
         if (prev_item == NULL) {
-            current->items = new_item;
-            new_item->next = current->items;
+            new_item->next = current_dungeon->items;
+            current_dungeon->items = new_item;
         } else {
             prev_item->next = new_item;
             new_item->next = current_item;
