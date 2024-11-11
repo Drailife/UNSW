@@ -399,7 +399,11 @@ void print_dungeon(struct map *map)
             if (current->items == NULL) {
                 print_no_items();
             } else {
-                print_item(current->items, position);
+                int position = 1;
+                for (struct item *item = current->items; item != NULL;
+                     item = item->next, position++) {
+                    print_item(current->items, position);
+                }
             }
             return;
         }
@@ -578,6 +582,7 @@ int add_item(struct map *map, int dungeon_number, enum item_type type,
         struct item *current_item = current_dungeon->items;
         while (current_item != NULL && type >= current_item->type) {
             prev_item = current_item;
+            iurrent_dungeon->items = new_item;
             current_item = current_item->next;
         }
         if (prev_item == NULL) {
