@@ -388,6 +388,7 @@ void print_dungeon(struct map *map)
             print_no_items();
             return;
         }
+        current = current->next;
     }
 }
 
