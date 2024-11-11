@@ -332,8 +332,12 @@ void player_stats(struct map *map)
         struct dungeon *player = find_player(map);
         print_player(map->player, player->name);
     }
-
-    print_no_items();
+    int posistion = 1;
+    for (struct item *item = map->player->inventory; item != NULL;
+         item = item->next) {
+        print_item(item, posistion);
+        posistion++;
+    }
 }
 
 // Your functions go here (include function comments):
@@ -392,7 +396,6 @@ int insert_dungeon(struct map *map, char *name, enum monster_type monster,
 void print_dungeon(struct map *map)
 {
     struct dungeon *current = map->entrance;
-    // int position = 1;
     while (current != NULL) {
         if (current->contains_player == 1) {
             print_detail_dungeon(map->player->name, current);
@@ -401,13 +404,13 @@ void print_dungeon(struct map *map)
             } else {
                 int pos = 1;
                 for (struct item *item = current->items; item != NULL;
-                     item = item->next, pos++) {
+                     item = item->next) {
                     print_item(item, pos);
+                    pos++;
                 }
             }
             return;
         }
-        // position++;
         current = current->next;
     }
 }
@@ -597,9 +600,27 @@ int add_item(struct map *map, int dungeon_number, enum item_type type,
 
 int collect_item(struct map *map, int item_number)
 {
-    // TODO: implement this function
-    printf("Collect Item not yet implemented.\n");
-    exit(1);
+    if (item_number < 1) {
+        return INVALID;
+    }
+    struct dungeon *player_dungeon = find_player(map);
+    struct item *prev_item = NULL;
+    struct item *current_item = player_dungeon->items;
+    for (int pos = 1; pos < item_number; pos++) {
+        if (current_item == NULL) {
+            return INVALID;
+        }
+        prev_item = current_item;
+        current_item = current_item->next;
+    }
+    if (prev_item == NULL) {
+        player_dungeon->items = current_item->next;
+    } else {
+        prev_item->next = current_item->next;
+    }
+    current_item->next = map->player->inventory;
+    map->player->inventory = current_item;
+    return VALID;
 }
 
 int use_item(struct map *map, int item_number)
