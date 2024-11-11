@@ -135,6 +135,8 @@ int check_amount(int num_monsters);
 // Function to check if the name is valid
 int check_name(struct map *map, char *name);
 
+// Function to find the player in the map
+struct dungeon *find_player(struct map *map);
 // Stage 2
 
 // Stage 3
@@ -427,26 +429,30 @@ int move_player(struct map *map, char command)
 
 int fight(struct map *map, char command)
 {
-    struct dungeon *current = map->entrance;
-    while (current != NULL) {
-        // find the dungeon the player is currently in
-        if (current->contains_player == 1) {
-            break;
-        }
-        current = current->next;
-    }
+    struct dungeon *current = find_player(map);
     if (current == NULL || current->num_monsters == 0) {
         return INVALID;
     }
     float damages = map->player->damage;
-    if (command == MAGIC_ATTACK) {
+    if (command == MAGICAL_ATTACK) {
         damages *= map->player->magic_modifier;
     }
+    for (int i = 1; i <= current->num_monsters; i++) {
+        damages -= current->monster;
+        if (damages >= 0) {
+            map->player->points += current->monster;
+            current->num_monsters--;
+        }
+    }
+    return VALID;
 }
 
 int end_turn(struct map *map)
 {
-    // TODO: implement this function
+    struct dungeon *current = find_player(map);
+    int monster_damage =
+        current->monster * current->num_monsters - map->player->shield_power;
+    map->player->health_points -= monster_damage;
     return CONTINUE_GAME;
 }
 
@@ -696,4 +702,17 @@ int check_name(struct map *map, char *name)
         current = current->next;
     }
     return VALID;
+}
+
+struct dungeon *find_player(struct map *map)
+{
+    struct dungeon *current = map->entrance;
+    while (current != NULL) {
+        // find the dungeon the player is currently in
+        if (current->contains_player == 1) {
+            break;
+        }
+        current = current->next;
+    }
+    return current;
 }
