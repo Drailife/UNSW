@@ -96,6 +96,9 @@ struct player {
 
     // the number of points they have collected over the course of the game
     int points;
+
+    // the flag to indicate if the player has used their special ability
+    int has_used_ability;
 };
 
 // Stores information about the boss-level monster initially placed in the last
@@ -184,6 +187,7 @@ struct player *create_player(char *name, char *class_type)
     player->name[MAX_STR_LEN - 1] = '\0';
     strncpy(player->class_type, class_type, MAX_STR_LEN);
     player->class_type[MAX_STR_LEN - 1] = '\0';
+    player->has_used_ability = 0;
     player->points = 0;
     if (strncmp(player->class_type, "Fighter", MAX_STR_LEN) == 0) {
         player->health_points = 30;
@@ -486,9 +490,19 @@ int end_turn(struct map *map)
 
 int class_power(struct map *map)
 {
-    // TODO: implement this function
-    printf("Class Power not yet implemented.\n");
-    exit(1);
+    if (map == NULL || map->player == NULL ||
+        map->player->has_used_ability == 1) {
+        return INVALID;
+    }
+    map->player->has_used_ability = 1;
+    if (strncmp(map->player->class_type, "Fighter", MAX_STR_LEN) == 0) {
+        map->player->damage *= 1.5;
+    } else if (strncmp(map->player->class_type, "Wizard", MAX_STR_LEN) == 0) {
+        struct dungeon *current = find_player(map);
+        map->player->points += current->num_monsters * current->monster;
+        current->num_monsters = 0;
+    }
+    return VALID;
 }
 
 // Your functions go here (include function comments):
