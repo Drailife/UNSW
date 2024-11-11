@@ -487,9 +487,10 @@ int fight(struct map *map, char command)
 
 int end_turn(struct map *map)
 {
-    if (map == NULL) {
+    if (map == NULL || map->entrance == NULL) {
         return CONTINUE_GAME;
     }
+    // Monster attacks
     struct dungeon *current = find_player(map);
     int total_damage = 0;
     if (current->monster == WOLF) {
@@ -508,11 +509,24 @@ int end_turn(struct map *map)
     }
     int no_monsters = 1;
     // check if there are any monsters left in the map
-    for (struct dungeon *d = map->entrance; d != NULL; d = d->next) {
-        if (d->num_monsters != 0) {
+    // Remove any empty dungeons
+    struct dungeon *prev = NULL;
+    struct dungeon *cur_next = NULL;
+    for (struct dungeon *cur = map->entrance; cur != NULL; cur = cur_next) {
+        cur_next = cur->next;
+        if (cur->num_monsters != 0) {
             no_monsters = 0;
-            break;
+        } else {
+            if (cur->contains_player == 0) {
+                if (prev != NULL) {
+                    prev->next = cur->next;
+                } else {
+                    map->entrance = cur->next;
+                }
+                free(cur);
+            }
         }
+        prev = cur;
     }
     if (map->player->points >= map->win_requirement && no_monsters == 1) {
         return WON_MONSTERS;
@@ -669,7 +683,32 @@ int use_item(struct map *map, int item_number)
 
 void free_map(struct map *map)
 {
-    // TODO: implement this function
+    // free all dungeons and items in the map
+    struct dungeon *current = map->entrance;
+    while (current != NULL) {
+        struct dungeon *next = current->next;
+        struct item *item = current->items;
+        // free all items in the dungeon
+        while (item != NULL) {
+            struct item *next_item = item->next;
+            free(item);
+            item = next_item;
+        }
+        if (current->boss != NULL) {
+            free(current->boss);
+        }
+        free(current);
+        current = next;
+    }
+    // free all items in the player's inventory
+    struct item *item = map->player->inventory;
+    while (item != NULL) {
+        struct item *next_item = item->next;
+        free(item);
+        item = next_item;
+    }
+    free(map->player);
+    free(map);
 }
 
 // Your functions here (include function comments):
