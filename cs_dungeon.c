@@ -523,6 +523,15 @@ int end_turn(struct map *map)
                 } else {
                     map->entrance = cur->next;
                 }
+                if (cur->boss != NULL) {
+                    free(cur->boss);
+                }
+                struct item *item = cur->items;
+                while (item != NULL) {
+                    struct item *next_item = item->next;
+                    free(item);
+                    item = next_item;
+                }
                 free(cur);
             }
         }
