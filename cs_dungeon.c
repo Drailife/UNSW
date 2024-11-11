@@ -532,17 +532,52 @@ int class_power(struct map *map)
 
 struct item *create_item(enum item_type type, int points)
 {
-    // TODO: implement this function
-    printf("Create Item not yet implemented.\n");
-    exit(1);
+    struct item *item = malloc(sizeof(struct item));
+    if (item == NULL) {
+        printf("Error: Could not allocate memory for item.\n");
+        exit(1);
+    }
+    item->type = type;
+    item->points = points;
+    return item;
 }
 
 int add_item(struct map *map, int dungeon_number, enum item_type type,
              int points)
 {
-    // TODO: implement this function
-    printf("Add Item not yet implemented.\n");
-    exit(1);
+    struct dungeon *current = map->entrance;
+    for (int i = 1; i < dungeon_number; i++) {
+        if (current == NULL) {
+            return INVALID_DUNGEON;
+        }
+        current = current->next;
+    }
+    if (type != PHYSICAL_WEAPON && type != MAGICAL_TOME && type != ARMOR &&
+        type != HEALTH_POTION && type != TREASURE) {
+        return INVALID_ITEM;
+    }
+    if (points < MIN_ITEM_POINT_VALUE || points > MAX_ITEM_POINT_VALUE) {
+        return INVALID_POINTS;
+    }
+    struct item *new_item = create_item(type, points);
+    if (current->items == NULL) {
+        current->items = new_item;
+    } else {
+        struct item *prev_item = NULL;
+        struct item *current_item = current->items;
+        while (current_item != NULL && type >= current_item->type) {
+            prev_item = current_item;
+            current_item = current_item->next;
+        }
+        if (prev_item == NULL) {
+            current->items = new_item;
+            new_item->next = current->items;
+        } else {
+            prev_item->next = new_item;
+            new_item->next = current_item;
+        }
+    }
+    return VALID;
 }
 
 int collect_item(struct map *map, int item_number)
