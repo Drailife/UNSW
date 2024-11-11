@@ -427,9 +427,21 @@ int move_player(struct map *map, char command)
 
 int fight(struct map *map, char command)
 {
-    // TODO: implement this function
-    printf("Fight not yet implemented.\n");
-    exit(1);
+    struct dungeon *current = map->entrance;
+    while (current != NULL) {
+        // find the dungeon the player is currently in
+        if (current->contains_player == 1) {
+            break;
+        }
+        current = current->next;
+    }
+    if (current == NULL || current->num_monsters == 0) {
+        return INVALID;
+    }
+    float damages = map->player->damage;
+    if (command == MAGIC_ATTACK) {
+        damages *= map->player->magic_modifier;
+    }
 }
 
 int end_turn(struct map *map)
@@ -515,10 +527,10 @@ int boss_fight(struct map *map)
 //                              Helper Functions //
 ////////////////////////////////////////////////////////////////////////////////
 
-// The following are helper functions that you can use to print any output
-// that main.c cannot handle for you.
-// The specification will tell you which functions you should use for each
-// stage.
+// The following are helper functions that you can use to print
+// any output that main.c cannot handle for you. The
+// specification will tell you which functions you should use
+// for each stage.
 
 char *get_player_name(struct player *player) { return player->name; }
 
