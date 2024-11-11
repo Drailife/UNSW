@@ -326,7 +326,8 @@ void player_stats(struct map *map)
     if (map->entrance == NULL) {
         print_player(map->player, NULL);
     } else {
-        print_player(map->player, map->entrance->name);
+        struct dungeon *player = find_player(map);
+        print_player(map->player, player->name);
     }
 
     print_no_items();
