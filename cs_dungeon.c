@@ -332,11 +332,15 @@ void player_stats(struct map *map)
         struct dungeon *player = find_player(map);
         print_player(map->player, player->name);
     }
-    int posistion = 1;
-    for (struct item *item = map->player->inventory; item != NULL;
-         item = item->next) {
-        print_item(item, posistion);
-        posistion++;
+    if (map->player->inventory == NULL) {
+        print_no_items();
+    } else {
+        int posistion = 1;
+        for (struct item *item = map->player->inventory; item != NULL;
+             item = item->next) {
+            print_item(item, posistion);
+            posistion++;
+        }
     }
 }
 
