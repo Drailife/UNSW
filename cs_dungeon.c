@@ -188,6 +188,7 @@ struct player *create_player(char *name, char *class_type)
     player->class_type[MAX_STR_LEN - 1] = '\0';
     player->has_used_ability = 0;
     player->points = 0;
+    player->inventory = NULL;
     if (strncmp(player->class_type, "Fighter", MAX_STR_LEN) == 0) {
         player->health_points = 30;
         player->shield_power = 2;
