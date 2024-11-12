@@ -510,7 +510,6 @@ int end_turn(struct map *map)
     if (map == NULL || map->entrance == NULL) {
         return CONTINUE_GAME;
     }
-    // Monster attacks
     struct dungeon *current = find_player(map);
     int total_damage = 0;
     if (current->monster == WOLF) {
@@ -523,11 +522,7 @@ int end_turn(struct map *map)
         total_damage = 0;
     }
     map->player->health_points -= total_damage;
-
     int no_monsters = 1;
-    // check if there are any monsters left in the map
-
-    // Remove any empty dungeons
     struct dungeon *prev = NULL;
     struct dungeon *cur_next = NULL;
     for (struct dungeon *cur = map->entrance; cur != NULL; cur = cur_next) {
@@ -546,20 +541,15 @@ int end_turn(struct map *map)
             free(cur);
             reset_teleport(map);
         }
-
         prev = cur;
     }
-    // Boss attack or move
     struct dungeon *boss_dungeon = boss_attack_or_move(map);
-    //  if the player has died, return PLAYER_DEFEATED
     if (map->player->health_points <= 0) {
         return PLAYER_DEFEATED;
     }
     if (map->player->points >= map->win_requirement && no_monsters == 1) {
         return WON_MONSTERS;
     }
-    // return WON_BOSS if the player defeated the boss and met the point
-    // requirement
     if (boss_dungeon->boss->health_points <= 0 &&
         map->player->points >= map->win_requirement) {
         print_boss_defeat();
