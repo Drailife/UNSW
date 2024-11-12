@@ -109,12 +109,17 @@ struct boss {
     // how many health points they have
     int health_points;
 
+    // how many origin health points they have
+    int origin_health_points;
+
     // how much damage they have
     int damage;
 
     // how many points they are worth when defeated
     int points;
 
+    // the flag to indicate if the player has attacked the boss
+    int has_attacked;
     // the item type the player is required to have to fight them
     enum item_type required_item;
 };
@@ -151,6 +156,7 @@ void reset_teleport(struct map *map);
 
 // Function to check if all dungeons in the map have been teleported
 int check_all_teleport(struct map *map);
+
 // Stage 2
 
 // Stage 3
@@ -312,9 +318,11 @@ struct boss *create_boss(int health_points, int damage, int points,
     if (boss == NULL) {
         exit(1);
     }
+    boss->origin_health_points = health_points;
     boss->health_points = health_points;
     boss->damage = damage;
     boss->points = points;
+    boss->has_attacked = 0;
     boss->required_item = required_item;
     return boss;
 }
@@ -778,7 +786,47 @@ int teleport(struct map *map)
     return VALID;
 }
 
-int boss_fight(struct map *map) { return 1; }
+int boss_fight(struct map *map)
+{
+    struct dungeon *player_dungeon = find_player(map);
+    struct boss *boss = player_dungeon->boss;
+    if (boss == NULL) {
+        return NO_BOSS;
+    }
+    if (map->player->inventory == NULL) {
+        return NO_ITEM;
+    }
+
+    // the logic for player attacking the boss
+    double player_damage = map->player->damage;
+    if (player_damage < (player_damage * map->player->magic_modifier)) {
+        player_damage = player_damage * map->player->magic_modifier;
+    }
+    boss->health_points -= player_damage;
+    // reach 50% of their original health or less, do 1.5 times more damage.
+    if (boss->health_points <= boss->origin_health_points / 2) {
+        boss->damage *= 1.5;
+    }
+    // when the player attacks the boss for the first time, the boss will
+    // shuffles the dungeons
+    if (boss->has_attacked == 0) {
+        boss->has_attacked = 1;
+        struct dungeon *dummy = create_dungeon("dummy", SKELETON, 0, 0);
+        dummy->next = map->entrance;
+        struct dungeon *prev = dummy;
+        while (prev->next != NULL && prev->next->next != NULL) {
+            struct dungeon *first = prev->next;
+            struct dungeon *second = prev->next->next;
+            first->next = second->next;
+            second->next = first;
+            prev->next = second;
+            prev = first;
+        }
+        free(dummy);
+    }
+
+    return VALID;
+}
 
 // Your functions here (include function comments):
 
