@@ -160,6 +160,8 @@ int check_all_teleport(struct map *map);
 // Function to handle the boss attack or movement
 struct dungeon *boss_attack_or_move(struct map *map);
 
+// Function to swap two dungeons in the map
+void swap_dungeon(struct dungeon **d1, struct dungeon **d2);
 // Stage 2
 
 // Stage 3
@@ -515,6 +517,9 @@ int end_turn(struct map *map)
     }
     // Monster attacks
     struct dungeon *current = find_player(map);
+    if (current == NULL) {
+        puts("CURRENT IS NULL");
+    }
     int total_damage = 0;
     if (current->monster == WOLF) {
         total_damage += current->num_monsters * WOLF;
@@ -553,7 +558,6 @@ int end_turn(struct map *map)
     }
     // Boss attack or move
     struct dungeon *boss_dungeon = boss_attack_or_move(map);
-
     //  if the player has died, return PLAYER_DEFEATED
     if (map->player->health_points <= 0) {
         return PLAYER_DEFEATED;
@@ -825,17 +829,18 @@ int boss_fight(struct map *map)
         struct dungeon *dummy = create_dungeon("dummy", SKELETON, 0, 0);
         dummy->next = map->entrance;
         struct dungeon *prev = dummy;
-        while (prev->next != NULL && prev->next->next != NULL) {
+        while (prev != NULL && prev->next != NULL && prev->next->next != NULL) {
             struct dungeon *first = prev->next;
             struct dungeon *second = prev->next->next;
             first->next = second->next;
             second->next = first;
             prev->next = second;
-            prev = first;
+            prev = prev->next->next;
         }
+        map->entrance = dummy->next;
+        puts(dummy->next->name);
         free(dummy);
     }
-
     return VALID;
 }
 
