@@ -157,6 +157,9 @@ void reset_teleport(struct map *map);
 // Function to check if all dungeons in the map have been teleported
 int check_all_teleport(struct map *map);
 
+// Function to handle the boss attack or movement
+struct dungeon *boss_attack_or_move(struct map *map);
+
 // Stage 2
 
 // Stage 3
@@ -523,12 +526,10 @@ int end_turn(struct map *map)
         total_damage = 0;
     }
     map->player->health_points -= total_damage;
-    //  if the player has died, return PLAYER_DEFEATED
-    if (map->player->health_points <= 0) {
-        return PLAYER_DEFEATED;
-    }
+
     int no_monsters = 1;
     // check if there are any monsters left in the map
+
     // Remove any empty dungeons
     struct dungeon *prev = NULL;
     struct dungeon *cur_next = NULL;
@@ -550,12 +551,22 @@ int end_turn(struct map *map)
         }
         prev = cur;
     }
+    // Boss attack or move
+    struct dungeon *boss_dungeon = boss_attack_or_move(map);
+
+    //  if the player has died, return PLAYER_DEFEATED
+    if (map->player->health_points <= 0) {
+        return PLAYER_DEFEATED;
+    }
     if (map->player->points >= map->win_requirement && no_monsters == 1) {
         return WON_MONSTERS;
     }
     // return WON_BOSS if the player defeated the boss and met the point
     // requirement
-
+    if (boss_dungeon->boss->health_points <= 0 &&
+        map->player->points >= map->win_requirement) {
+        return WON_BOSS;
+    }
     return CONTINUE_GAME;
 }
 
@@ -1036,4 +1047,47 @@ int check_all_teleport(struct map *map)
         temp = temp->next;
     }
     return VALID;
+}
+
+struct dungeon *boss_attack_or_move(struct map *map)
+{
+    int player_position = -1;
+    int boss_position = -1;
+    struct dungeon *boss_dungeon = NULL;
+    int position = -1;
+    for (struct dungeon *cur = map->entrance; cur != NULL; cur = cur->next) {
+        if (cur->contains_player == 1) {
+            player_position = position;
+        }
+        if (cur->boss != NULL) {
+            boss_dungeon = cur;
+            boss_position = position;
+        }
+        position++;
+    }
+    if (boss_dungeon == NULL) {
+        exit(1);
+    }
+    // if the boss is in the same dungeon as the player, attack the player
+    if (boss_position == player_position) {
+        int boss_damage = boss_dungeon->boss->damage;
+        boss_damage -= map->player->shield_power;
+        if (boss_damage < 0) {
+            boss_damage = 0;
+        }
+        map->player->health_points -= boss_damage;
+        return boss_dungeon;
+    } else if (boss_position < player_position) {
+        boss_dungeon->next->boss = boss_dungeon->boss;
+        boss_dungeon->boss = NULL;
+        return boss_dungeon->next;
+    } else {
+        struct dungeon *prev = map->entrance;
+        while (prev->next != boss_dungeon) {
+            prev = prev->next;
+        }
+        prev->boss = prev->next->boss;
+        prev->next->boss = NULL;
+        return prev;
+    }
 }
