@@ -56,6 +56,9 @@ struct dungeon {
 
     // the flag to indicate if the player has attacked the monster
     int has_attacked;
+
+    // the flag to indicate if the player has used the teleport ability
+    int has_teleport;
 };
 
 // Stores information about an item
@@ -142,6 +145,9 @@ int check_name(struct map *map, char *name);
 
 // Function to find the player in the map
 struct dungeon *find_player(struct map *map);
+
+// Function to reset the teleport status of all dungeons in the map
+void reset_teleport(struct map *map);
 // Stage 2
 
 // Stage 3
@@ -230,6 +236,8 @@ struct dungeon *create_dungeon(char *name, enum monster_type monster,
     dungeon->items = NULL;
     dungeon->next = NULL;
     dungeon->has_attacked = 0;
+    dungeon->has_teleport = 0;
+    dungeon->position = -1;
     return dungeon;
 }
 
@@ -337,8 +345,8 @@ void player_stats(struct map *map)
         print_no_items();
     } else {
         int posistion = 1;
-        for (struct item *item = map->player->inventory; item != NULL;
-             item = item->next) {
+        struct item *item = NULL;
+        for (item = map->player->inventory; item != NULL; item = item->next) {
             print_item(item, posistion);
             posistion++;
         }
@@ -430,6 +438,7 @@ int move_player(struct map *map, char command)
     struct dungeon *current = map->entrance;
     while (current != NULL) {
         if (current->contains_player == 1) {
+            reset_teleport(map);
             if (command == NEXT_DUNGEON) {
                 if (current->next != NULL) {
                     current->contains_player = 0;
@@ -525,6 +534,7 @@ int end_turn(struct map *map)
                     map->entrance = cur->next;
                 }
                 free(cur);
+                reset_teleport(map);
             }
         }
         prev = cur;
@@ -721,9 +731,42 @@ void free_map(struct map *map)
 
 int teleport(struct map *map)
 {
-    // TODO: implement this function
-    printf("Teleport not yet implemented.\n");
-    exit(1);
+    struct dungeon *temp = map->entrance;
+    struct dungeon *player_dungeon = NULL;
+    int index = 1;
+    int player_position = -1;
+    while (temp != NULL) {
+        if (temp->contains_player == 1) {
+            player_dungeon = temp;
+            player_position = index;
+            break;
+        }
+        temp = temp->next;
+        index++;
+    }
+
+    index = 1;
+    temp = map->entrance;
+    int max_distance = -1;
+    struct dungeon *furthest_dungeon = NULL;
+    while (temp != NULL) {
+        if (temp->has_teleport == 0) {
+            int distance = abs(index - player_position);
+            if (distance > max_distance) {
+                max_distance = distance;
+                furthest_dungeon = temp;
+            }
+        }
+        temp = temp->next;
+        index++;
+    }
+    if (furthest_dungeon == NULL) {
+        return INVALID;
+    }
+    player_dungeon->contains_player = 0;
+    furthest_dungeon->contains_player = 1;
+    furthest_dungeon->has_teleport = 1;
+    return VALID;
 }
 
 int boss_fight(struct map *map)
@@ -920,4 +963,13 @@ struct dungeon *find_player(struct map *map)
         current = current->next;
     }
     return current;
+}
+
+void reset_teleport(struct map *map)
+{
+    struct dungeon *temp = map->entrance;
+    while (temp != NULL) {
+        temp->has_teleport = 0;
+        temp = temp->next;
+    }
 }
