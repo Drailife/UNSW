@@ -109,6 +109,9 @@ struct boss {
     // how many health points they have
     int health_points;
 
+    // how many origin health points they have
+    int origin_health_points;
+
     // how much damage they have
     int damage;
 
@@ -117,6 +120,9 @@ struct boss {
 
     // the item type the player is required to have to fight them
     enum item_type required_item;
+
+    // the flag to indicate if the player has attacked the boss
+    int has_attacked;
 };
 
 // Add any other structs you define here.
@@ -146,11 +152,18 @@ int check_name(struct map *map, char *name);
 // Function to find the player in the map
 struct dungeon *find_player(struct map *map);
 
+// Function to remove empty dungeons from the map
+void remove_empty_dungeons(struct map *map);
+
 // Function to reset the teleport status of all dungeons in the map
 void reset_teleport(struct map *map);
 
 // Function to check if all dungeons in the map have been teleported
 int check_all_teleport(struct map *map);
+
+// Funtion to handel boss's attack or movement
+void boss_attack_or_move(struct map *map);
+
 // Stage 2
 
 // Stage 3
@@ -312,10 +325,12 @@ struct boss *create_boss(int health_points, int damage, int points,
     if (boss == NULL) {
         exit(1);
     }
+    boss->origin_health_points = health_points;
     boss->health_points = health_points;
     boss->damage = damage;
     boss->points = points;
     boss->required_item = required_item;
+    boss->has_attacked = 0;
     return boss;
 }
 
@@ -515,35 +530,28 @@ int end_turn(struct map *map)
         total_damage = 0;
     }
     map->player->health_points -= total_damage;
+
+    int no_monsters = 1;
+    // check if there are any monsters left in the map
+    current = map->entrance;
+    while (current != NULL) {
+        if (current->num_monsters != 0) {
+            no_monsters = 0;
+            break;
+        }
+    }
+    // Remove any empty dungeons
+    remove_empty_dungeons(map);
+
+    // Boss attack or move
+
+    // Check if the game is over
+    if (map->player->points >= map->win_requirement && no_monsters == 1) {
+        return WON_MONSTERS;
+    }
     //  if the player has died, return PLAYER_DEFEATED
     if (map->player->health_points <= 0) {
         return PLAYER_DEFEATED;
-    }
-    int no_monsters = 1;
-    // check if there are any monsters left in the map
-    // Remove any empty dungeons
-    struct dungeon *prev = NULL;
-    struct dungeon *cur_next = NULL;
-    for (struct dungeon *cur = map->entrance; cur != NULL; cur = cur_next) {
-        cur_next = cur->next;
-        if (cur->num_monsters != 0) {
-            no_monsters = 0;
-        } else {
-            if (cur->contains_player == 0 && cur->boss == NULL &&
-                cur->items == NULL) {
-                if (prev != NULL) {
-                    prev->next = cur->next;
-                } else {
-                    map->entrance = cur->next;
-                }
-                free(cur);
-                reset_teleport(map);
-            }
-        }
-        prev = cur;
-    }
-    if (map->player->points >= map->win_requirement && no_monsters == 1) {
-        return WON_MONSTERS;
     }
     // return WON_BOSS if the player defeated the boss and met the point
     // requirement
@@ -778,7 +786,47 @@ int teleport(struct map *map)
     return VALID;
 }
 
-int boss_fight(struct map *map) { return 1; }
+int boss_fight(struct map *map)
+{
+    struct dungeon *player_dungeon = find_player(map);
+    struct boss *boss = player_dungeon->boss;
+    if (boss == NULL) {
+        return NO_BOSS;
+    }
+    if (map->player->inventory == NULL) {
+        return NO_ITEM;
+    }
+
+    // the logic for player attacking the boss
+    double player_damage = map->player->damage;
+    if (player_damage < (player_damage * map->player->magic_modifier)) {
+        player_damage = player_damage * map->player->magic_modifier;
+    }
+    boss->health_points -= player_damage;
+    // reach 50% of their original health or less, do 1.5 times more damage.
+    if (boss->health_points <= boss->origin_health_points / 2) {
+        boss->damage *= 1.5;
+    }
+    // when the player attacks the boss for the first time, the boss will
+    // shuffles the dungeons
+    if (boss->has_attacked == 0) {
+        boss->has_attacked = 1;
+        struct dungeon *dummy = create_dungeon("dummy", SKELETON, 0, 0);
+        dummy->next = map->entrance;
+        struct dungeon *prev = dummy;
+        while (prev->next != NULL && prev->next->next != NULL) {
+            struct dungeon *first = prev->next;
+            struct dungeon *second = prev->next->next;
+            first->next = second->next;
+            second->next = first;
+            prev->next = second;
+            prev = first;
+        }
+        free(dummy);
+    }
+
+    return VALID;
+}
 
 // Your functions here (include function comments):
 
@@ -969,6 +1017,30 @@ struct dungeon *find_player(struct map *map)
     return current;
 }
 
+void remove_empty_dungeons(struct map *map)
+{
+    struct dungeon *prev = NULL;
+    struct dungeon *cur_next = NULL;
+    for (struct dungeon *cur = map->entrance; cur != NULL; cur = cur_next) {
+        cur_next = cur->next;
+        if (cur->num_monsters != 0) {
+            continue;
+        } else {
+            if (cur->contains_player == 0 && cur->boss == NULL &&
+                cur->items == NULL) {
+                if (prev != NULL) {
+                    prev->next = cur->next;
+                } else {
+                    map->entrance = cur->next;
+                }
+                free(cur);
+                reset_teleport(map);
+            }
+        }
+        prev = cur;
+    }
+}
+
 void reset_teleport(struct map *map)
 {
     struct dungeon *temp = map->entrance;
@@ -989,3 +1061,5 @@ int check_all_teleport(struct map *map)
     }
     return VALID;
 }
+
+void boss_attack_or_move(struct map *map) {}
