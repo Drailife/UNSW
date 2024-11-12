@@ -425,20 +425,22 @@ void print_dungeon(struct map *map)
 {
     struct dungeon *current = map->entrance;
     while (current != NULL) {
-        if (current->contains_player == 1) {
-            print_detail_dungeon(map->player->name, current);
-            if (current->items == NULL) {
-                print_no_items();
-            } else {
-                int pos = 1;
-                for (struct item *item = current->items; item != NULL;
-                     item = item->next) {
-                    print_item(item, pos);
-                    pos++;
-                }
-            }
-            return;
+        if (current->contains_player != 1) {
+            continue;
         }
+        print_detail_dungeon(map->player->name, current);
+        if (current->items == NULL) {
+            print_no_items();
+        } else {
+            int pos = 1;
+            struct item *item = NULL;
+            for (item = current->items; item != NULL; item = item->next) {
+                print_item(item, pos);
+                pos++;
+            }
+        }
+        return;
+
         current = current->next;
     }
 }
