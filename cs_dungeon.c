@@ -517,9 +517,6 @@ int end_turn(struct map *map)
     }
     // Monster attacks
     struct dungeon *current = find_player(map);
-    if (current == NULL) {
-        puts("CURRENT IS NULL");
-    }
     int total_damage = 0;
     if (current->monster == WOLF) {
         total_damage += current->num_monsters * WOLF;
@@ -567,6 +564,9 @@ int end_turn(struct map *map)
     }
     // return WON_BOSS if the player defeated the boss and met the point
     // requirement
+    printf("boss'health points: %d\n", boss_dungeon->boss->health_points);
+    printf("player's points: %d\n", map->player->points);
+    printf("win requirement: %d\n", map->win_requirement);
     if (boss_dungeon->boss->health_points <= 0 &&
         map->player->points >= map->win_requirement) {
         return WON_BOSS;
@@ -838,7 +838,6 @@ int boss_fight(struct map *map)
             prev = prev->next->next;
         }
         map->entrance = dummy->next;
-        puts(dummy->next->name);
         free(dummy);
     }
     return VALID;
@@ -1070,7 +1069,10 @@ struct dungeon *boss_attack_or_move(struct map *map)
         }
         position++;
     }
-    if (boss_dungeon->has_attacked == 0) {
+    if (boss_dungeon == NULL) {
+        return NULL;
+    }
+    if (boss_dungeon->boss->has_attacked == 0) {
         return boss_dungeon;
     }
     if (boss_dungeon == NULL) {
