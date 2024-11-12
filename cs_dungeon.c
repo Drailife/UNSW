@@ -148,6 +148,9 @@ struct dungeon *find_player(struct map *map);
 
 // Function to reset the teleport status of all dungeons in the map
 void reset_teleport(struct map *map);
+
+// Function to check if all dungeons in the map have been teleported
+int check_all_teleport(struct map *map);
 // Stage 2
 
 // Stage 3
@@ -730,6 +733,12 @@ void free_map(struct map *map)
 
 int teleport(struct map *map)
 {
+    if (map->entrance->next == NULL) {
+        return INVALID;
+    }
+    if (check_all_teleport(map) == VALID) {
+        reset_teleport(map);
+    }
     struct dungeon *temp = map->entrance;
     struct dungeon *player_dungeon = NULL;
     int index = 1;
@@ -759,10 +768,6 @@ int teleport(struct map *map)
         }
         temp = temp->next;
         index++;
-    }
-    if (furthest_dungeon == NULL || player_dungeon == NULL) {
-        reset_teleport(map);
-        return INVALID;
     }
     player_dungeon->contains_player = 0;
     furthest_dungeon->contains_player = 1;
@@ -973,4 +978,15 @@ void reset_teleport(struct map *map)
         temp->has_teleport = 0;
         temp = temp->next;
     }
+}
+
+int check_all_teleport(struct map *map)
+{
+    struct dungeon *temp = map->entrance;
+    while (temp != NULL) {
+        if (temp->has_teleport == 0) {
+            return INVALID;
+        }
+    }
+    return VALID;
 }
