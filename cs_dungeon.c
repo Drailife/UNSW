@@ -1065,6 +1065,9 @@ struct dungeon *boss_attack_or_move(struct map *map)
         }
         position++;
     }
+    if (boss_dungeon->has_attacked == 0) {
+        return boss_dungeon;
+    }
     if (boss_dungeon == NULL) {
         exit(1);
     }
