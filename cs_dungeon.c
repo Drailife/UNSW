@@ -761,6 +761,7 @@ int teleport(struct map *map)
         index++;
     }
     if (furthest_dungeon == NULL || player_dungeon == NULL) {
+        reset_teleport(map);
         return INVALID;
     }
     player_dungeon->contains_player = 0;
