@@ -815,7 +815,7 @@ void print_basic_dungeon(struct dungeon *dungeon, char *player_name,
     printf("Monster: %s\n", monster_string(dungeon->monster));
 
     if (dungeon->contains_player) {
-        printf("--%s is here\n", player_name);
+        printf("%s is here\n", player_name);
     } else {
         printf("Empty\n");
     }
