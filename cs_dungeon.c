@@ -237,7 +237,6 @@ struct dungeon *create_dungeon(char *name, enum monster_type monster,
     dungeon->next = NULL;
     dungeon->has_attacked = 0;
     dungeon->has_teleport = 0;
-    dungeon->position = -1;
     return dungeon;
 }
 
