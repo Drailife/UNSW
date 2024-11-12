@@ -738,6 +738,7 @@ int teleport(struct map *map)
         if (temp->contains_player == 1) {
             player_dungeon = temp;
             player_position = index;
+            player_dungeon->has_teleport = 1;
             break;
         }
         temp = temp->next;
@@ -759,7 +760,7 @@ int teleport(struct map *map)
         temp = temp->next;
         index++;
     }
-    if (furthest_dungeon == NULL) {
+    if (furthest_dungeon == NULL || player_dungeon == NULL) {
         return INVALID;
     }
     player_dungeon->contains_player = 0;
