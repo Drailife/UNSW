@@ -455,25 +455,18 @@ int move_player(struct map *map, char command)
     struct dungeon *current = map->entrance;
     while (current != NULL) {
         if (current->contains_player == 1) {
-            if (command == NEXT_DUNGEON) {
-                if (current->next != NULL) {
-                    current->contains_player = 0;
-                    current->next->contains_player = 1;
-                    reset_teleport(map);
-                    return VALID;
-                }
-                return INVALID;
-            } else if (command == PREVIOUS_DUNGEON) {
-                if (prev != NULL) {
-                    prev->contains_player = 1;
-                    current->contains_player = 0;
-                    reset_teleport(map);
-                    return VALID;
-                }
-                return INVALID;
+            if (command == NEXT_DUNGEON && current->next != NULL) {
+                current->contains_player = 0;
+                current->next->contains_player = 1;
+                reset_teleport(map);
+                return VALID;
+            } else if (command == PREVIOUS_DUNGEON && prev != NULL) {
+                prev->contains_player = 1;
+                current->contains_player = 0;
+                reset_teleport(map);
+                return VALID;
             }
         }
-
         prev = current;
         current = current->next;
     }
@@ -541,18 +534,19 @@ int end_turn(struct map *map)
         cur_next = cur->next;
         if (cur->num_monsters != 0) {
             no_monsters = 0;
-        } else {
-            if (cur->contains_player == 0 && cur->boss == NULL &&
-                cur->items == NULL) {
-                if (prev != NULL) {
-                    prev->next = cur->next;
-                } else {
-                    map->entrance = cur->next;
-                }
-                free(cur);
-                reset_teleport(map);
-            }
+            continue;
         }
+        if (cur->contains_player == 0 && cur->boss == NULL &&
+            cur->items == NULL) {
+            if (prev != NULL) {
+                prev->next = cur->next;
+            } else {
+                map->entrance = cur->next;
+            }
+            free(cur);
+            reset_teleport(map);
+        }
+
         prev = cur;
     }
     // Boss attack or move
