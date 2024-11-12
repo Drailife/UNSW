@@ -426,6 +426,7 @@ void print_dungeon(struct map *map)
     struct dungeon *current = map->entrance;
     while (current != NULL) {
         if (current->contains_player != 1) {
+            current = current->next;
             continue;
         }
         print_detail_dungeon(map->player->name, current);
@@ -440,8 +441,6 @@ void print_dungeon(struct map *map)
             }
         }
         return;
-
-        current = current->next;
     }
 }
 
