@@ -564,9 +564,6 @@ int end_turn(struct map *map)
     }
     // return WON_BOSS if the player defeated the boss and met the point
     // requirement
-    printf("boss'health points: %d\n", boss_dungeon->boss->health_points);
-    printf("player's points: %d\n", map->player->points);
-    printf("win requirement: %d\n", map->win_requirement);
     if (boss_dungeon->boss->health_points <= 0 &&
         map->player->points >= map->win_requirement) {
         return WON_BOSS;
@@ -818,6 +815,9 @@ int boss_fight(struct map *map)
         player_damage = player_damage * map->player->magic_modifier;
     }
     boss->health_points -= player_damage;
+    if (boss->health_points <= 0) {
+        map->player->points += boss->points;
+    }
     // reach 50% of their original health or less, do 1.5 times more damage.
     if (boss->health_points <= boss->origin_health_points / 2) {
         boss->damage *= 1.5;
