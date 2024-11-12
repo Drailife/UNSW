@@ -566,6 +566,7 @@ int end_turn(struct map *map)
     // requirement
     if (boss_dungeon->boss->health_points <= 0 &&
         map->player->points >= map->win_requirement) {
+        print_boss_defeat();
         return WON_BOSS;
     }
     return CONTINUE_GAME;
