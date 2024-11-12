@@ -987,6 +987,7 @@ int check_all_teleport(struct map *map)
         if (temp->has_teleport == 0) {
             return INVALID;
         }
+        temp = temp->next;
     }
     return VALID;
 }
